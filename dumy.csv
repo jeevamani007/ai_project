@@ -1,0 +1,51 @@
+Employee_ID,Employee_Name,Department,Date,Status,Check_In_Time,Check_Out_Time,Working_Hours,Remarks
+E001,Rajesh Kumar,IT,2024-01-02,Present,09:15,18:30,9.25,On Time
+E002,Priya Sharma,HR,2024-01-02,Present,09:00,18:00,9.00,On Time
+E003,Amit Patel,Finance,2024-01-02,Present,09:30,18:15,8.75,Late Arrival
+E004,Sneha Reddy,Marketing,2024-01-02,Absent,,,0.00,Sick Leave
+E005,Vikram Singh,IT,2024-01-02,Present,09:05,18:20,9.25,On Time
+E006,Anita Desai,Sales,2024-01-02,Present,09:10,18:00,8.83,On Time
+E007,Rahul Verma,Operations,2024-01-02,Present,09:00,18:30,9.50,On Time
+E008,Kavita Nair,HR,2024-01-02,Present,09:20,18:10,8.83,Late Arrival
+E009,Suresh Iyer,IT,2024-01-02,Present,08:55,18:00,9.08,On Time
+E010,Deepa Menon,Finance,2024-01-02,Half Day,09:00,13:00,4.00,Personal Work
+E011,Arjun Rao,Marketing,2024-01-02,Present,09:15,18:15,9.00,On Time
+E012,Meera Joshi,Sales,2024-01-02,Present,09:00,18:00,9.00,On Time
+E013,Karthik Bhat,IT,2024-01-02,Present,09:25,18:30,9.08,Late Arrival
+E014,Divya Pillai,Operations,2024-01-02,Present,09:10,18:20,9.17,On Time
+E015,Ravi Agarwal,Finance,2024-01-02,Present,09:00,18:00,9.00,On Time
+E016,Pooja Gupta,HR,2024-01-02,Absent,,,0.00,Casual Leave
+E017,Arun Shetty,IT,2024-01-02,Present,09:05,18:25,9.33,On Time
+E018,Lakshmi Krishnan,Marketing,2024-01-02,Present,09:15,18:15,9.00,On Time
+E019,Manoj Malhotra,Sales,2024-01-02,Present,09:30,18:00,8.50,Late Arrival
+E020,Shalini Kapoor,Operations,2024-01-02,Present,09:00,18:10,9.17,On Time
+E021,Vishal Mehta,IT,2024-01-02,Present,09:10,18:30,9.33,On Time
+E022,Anjali Saxena,Finance,2024-01-02,Present,09:20,18:20,9.00,Late Arrival
+E023,Santosh Kulkarni,HR,2024-01-02,Present,09:00,18:00,9.00,On Time
+E024,Nisha Bansal,Marketing,2024-01-02,Half Day,09:00,13:30,4.50,Medical Appointment
+E025,Prakash Yadav,Sales,2024-01-02,Present,09:15,18:15,9.00,On Time
+E026,Rekha Dutta,IT,2024-01-02,Present,09:05,18:00,8.92,On Time
+E027,Ganesh Pandey,Operations,2024-01-02,Present,09:00,18:30,9.50,On Time
+E028,Swati Chatterjee,Finance,2024-01-02,Present,09:25,18:10,8.75,Late Arrival
+E029,Mahesh Tiwari,HR,2024-01-02,Present,09:10,18:20,9.17,On Time
+E030,Aarti Mishra,Marketing,2024-01-02,Absent,,,0.00,Sick Leave
+E031,Naveen Chopra,Sales,2024-01-02,Present,09:00,18:00,9.00,On Time
+E032,Ritika Bhatt,IT,2024-01-02,Present,09:15,18:30,9.25,On Time
+E033,Sanjay Goyal,Operations,2024-01-02,Present,09:30,18:15,8.75,Late Arrival
+E034,Tanvi Shah,Finance,2024-01-02,Present,09:05,18:05,9.00,On Time
+E035,Vivek Jain,HR,2024-01-02,Present,09:00,18:00,9.00,On Time
+E036,Neha Arora,Marketing,2024-01-02,Present,09:20,18:20,9.00,Late Arrival
+E037,Rohit Sethi,Sales,2024-01-02,Half Day,09:00,13:00,4.00,Family Function
+E038,Simran Kaur,IT,2024-01-02,Present,09:10,18:15,9.08,On Time
+E039,Tarun Modi,Operations,2024-01-02,Present,09:00,18:30,9.50,On Time
+E040,Urmila Rane,Finance,2024-01-02,Present,09:15,18:00,8.75,On Time
+E041,Varun Thakur,HR,2024-01-02,Present,09:00,18:10,9.17,On Time
+E042,Yamini Hegde,Marketing,2024-01-02,Absent,,,0.00,Casual Leave
+E043,Ashok Singhal,Sales,2024-01-02,Present,09:25,18:25,9.00,Late Arrival
+E044,Bhavna Das,IT,2024-01-02,Present,09:05,18:20,9.25,On Time
+E045,Chetan Dubey,Operations,2024-01-02,Present,09:10,18:30,9.33,On Time
+E046,Dolly Ahuja,Finance,2024-01-02,Present,09:00,18:00,9.00,On Time
+E047,Esha Khanna,HR,2024-01-02,Present,09:15,18:15,9.00,On Time
+E048,Farhan Ali,Marketing,2024-01-02,Present,09:30,18:00,8.50,Late Arrival
+E049,Garima Soni,Sales,2024-01-02,Present,09:00,18:20,9.33,On Time
+E050,Harsh Bajaj,IT,2024-01-02,Present,09:05,18:10,9.08,On Time

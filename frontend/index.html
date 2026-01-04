@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Rule Discovery & Data Insight Engine</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>Business Rule Discovery & Data Insight Engine</h2>
+<p class="subtitle">Upload your dataset (CSV, XLS, XLSX) to automatically detect the domain, profile data, and extract actionable business rules, constraints, derivations, associations, and insights</p>
+
+<div class="upload-section">
+  <input type="file" id="fileInput" accept=".csv,.xls,.xlsx">
+  <button onclick="upload()">Analyze</button>
+</div>
+
+<div id="result"></div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
