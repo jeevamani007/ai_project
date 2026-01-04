@@ -757,6 +757,22 @@ pre {
   font-style: italic;
 }
 
+.exclusions-list {
+  margin-top: 15px;
+  padding: 15px;
+  background: #e3f2fd;
+  border-radius: 5px;
+}
+
+.exclusions-list ul {
+  margin: 10px 0 0 20px;
+  color: #1565c0;
+}
+
+.exclusions-list li {
+  margin: 8px 0;
+}
+
 @media (max-width: 768px) {
   .rule-code {
     grid-template-columns: 1fr;

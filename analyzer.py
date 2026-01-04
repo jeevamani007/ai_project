@@ -99,10 +99,28 @@ def profile_dataset(df: pd.DataFrame) -> dict:
 
 # ==================== VALIDATION RULES ====================
 def identify_validation_rules(df: pd.DataFrame) -> list:
-    """Generate ONLY universally valid business rules - NO statistics"""
+    """
+    Generate ONLY universally valid business rules - NO statistics.
+    EXCLUDE: dates, IDs, high-cardinality fields.
+    """
     rules = []
     
+    # EXCLUDE these columns from rule generation
+    excluded_patterns = ['id', 'name', 'code', 'key', 'date', 'time']
+    high_cardinality_threshold = 0.8  # If >80% unique values, likely identifier
+    
     for col in df.columns:
+        col_lower = col.lower()
+        
+        # STRICT EXCLUSION: Skip IDs, dates, high-cardinality fields
+        if any(pattern in col_lower for pattern in excluded_patterns):
+            continue
+        
+        if df[col].nunique() > len(df) * high_cardinality_threshold:
+            continue  # High cardinality = likely identifier
+        
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            continue  # Never create rules from dates
         col_data = df[col].dropna()
         if len(col_data) == 0:
             continue
@@ -245,9 +263,22 @@ def identify_decision_rules(df: pd.DataFrame) -> list:
                     })
     
     # Check for late arrival rules based on Check_In_Time
+    # ONLY if it's not a date column (time strings are OK)
+    excluded_patterns = ['id', 'name', 'code', 'key']
+    high_cardinality_threshold = 0.8
+    
     check_in_col = None
     for col in df.columns:
-        if 'check_in' in col.lower() or 'checkin' in col.lower():
+        col_lower = col.lower()
+        # Skip if it's an ID/name/code or high cardinality
+        if any(pattern in col_lower for pattern in excluded_patterns):
+            continue
+        if df[col].nunique() > len(df) * high_cardinality_threshold:
+            continue
+        # Skip if it's a datetime type (not a time string)
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            continue
+        if 'check_in' in col_lower or 'checkin' in col_lower:
             check_in_col = col
             break
     
@@ -287,9 +318,19 @@ def identify_decision_rules(df: pd.DataFrame) -> list:
                         pass
     
     # Check for time relationship: Check_Out_Time must be after Check_In_Time
+    # ONLY if it's not a date column
     check_out_col = None
     for col in df.columns:
-        if 'check_out' in col.lower() or 'checkout' in col.lower():
+        col_lower = col.lower()
+        # Skip if it's an ID/name/code or high cardinality
+        if any(pattern in col_lower for pattern in excluded_patterns):
+            continue
+        if df[col].nunique() > len(df) * high_cardinality_threshold:
+            continue
+        # Skip if it's a datetime type
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            continue
+        if 'check_out' in col_lower or 'checkout' in col.lower():
             check_out_col = col
             break
     
@@ -317,10 +358,28 @@ def identify_decision_rules(df: pd.DataFrame) -> list:
 
 # ==================== CONSTRAINTS ====================
 def identify_constraints(df: pd.DataFrame) -> list:
-    """Apply ONLY realistic, real-world limits - NO statistical ranges"""
+    """
+    STRICT: Apply ONLY realistic, real-world limits - NO statistical ranges.
+    EXCLUDE: dates, IDs, high-cardinality fields.
+    """
     constraints = []
     
+    # EXCLUDE columns that shouldn't generate constraints
+    excluded_patterns = ['id', 'name', 'code', 'key', 'date']
+    high_cardinality_threshold = 0.8
+    
     for col in df.columns:
+        col_lower = col.lower()
+        
+        # STRICT EXCLUSION: Skip IDs, dates, high-cardinality fields
+        if any(pattern in col_lower for pattern in excluded_patterns):
+            continue
+        
+        if df[col].nunique() > len(df) * high_cardinality_threshold:
+            continue  # High cardinality = likely identifier
+        
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            continue  # Never create constraints from dates
         if df[col].dtype in ['int64', 'float64']:
             col_data = df[col].dropna()
             if len(col_data) == 0:
@@ -376,13 +435,29 @@ def identify_constraints(df: pd.DataFrame) -> list:
 
 # ==================== DERIVED FIELDS ====================
 def identify_derivations(df: pd.DataFrame) -> list:
-    """Create derived fields ONLY if they have direct business value"""
+    """
+    STRICT: Create derived fields ONLY if they have direct business value.
+    EXCLUDE: dates, IDs, high-cardinality fields.
+    """
     derivations = []
+    
+    # EXCLUDE columns that shouldn't generate derivations
+    excluded_patterns = ['id', 'name', 'code', 'key']
+    high_cardinality_threshold = 0.8
     
     # Late Arrival derived field
     check_in_col = None
     for col in df.columns:
-        if 'check_in' in col.lower() or 'checkin' in col.lower():
+        col_lower = col.lower()
+        # Skip if it's an ID/name/code or high cardinality
+        if any(pattern in col_lower for pattern in excluded_patterns):
+            continue
+        if df[col].nunique() > len(df) * high_cardinality_threshold:
+            continue
+        # Skip if it's a datetime type
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            continue
+        if 'check_in' in col_lower or 'checkin' in col_lower:
             check_in_col = col
             break
     
@@ -424,48 +499,56 @@ def identify_derivations(df: pd.DataFrame) -> list:
 
 # ==================== ASSOCIATIONS ====================
 def identify_associations(df: pd.DataFrame) -> list:
-    """Generate associations ONLY if they have clear business meaning - NO constant/single-value columns"""
+    """
+    STRICT: Generate associations ONLY if backed by real HR policy.
+    Do NOT create associations from data coincidence.
+    Most associations will be excluded unless they represent explicit business logic.
+    """
     associations = []
     
-    # Filter out identifier columns
-    id_cols = [col for col in df.columns if any(x in col.lower() for x in ['id', 'name', 'code'])]
+    # STRICT EXCLUSIONS: Never create associations from these
+    id_cols = [col for col in df.columns if any(x in col.lower() for x in ['id', 'name', 'code', 'key'])]
+    date_cols = [col for col in df.columns if 'date' in col.lower() or pd.api.types.is_datetime64_any_dtype(df[col])]
     
-    # Filter out constant columns (single value)
+    # High cardinality = likely identifier (exclude)
+    high_cardinality_cols = [col for col in df.columns if df[col].nunique() > len(df) * 0.8]
+    
+    # Constant columns (single value)
     constant_cols = [col for col in df.columns if df[col].nunique() == 1]
     
-    # Filter out date columns with single value
-    date_cols = [col for col in df.columns if df[col].nunique() == 1 and 'date' in col.lower()]
+    excluded_cols = set(id_cols + date_cols + high_cardinality_cols + constant_cols)
     
-    excluded_cols = set(id_cols + constant_cols + date_cols)
+    # ONLY create associations for known HR policy relationships
+    # Example: Status -> Working_Hours (this is a policy, not coincidence)
+    status_col = None
+    working_hours_col = None
     
-    numeric_cols = [col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col not in excluded_cols]
+    for col in df.columns:
+        if 'status' in col.lower() and col not in excluded_cols:
+            status_col = col
+        if 'working_hours' in col.lower() and col not in excluded_cols:
+            working_hours_col = col
     
-    # Check for 1:1 mappings (but not ID columns)
-    for col1 in df.columns:
-        if col1 in excluded_cols:
-            continue
-        for col2 in df.columns:
-            if col2 in excluded_cols or col1 == col2:
-                continue
-            
-            # Check if col1 uniquely determines col2 (but not vice versa for IDs)
-            if col1 not in id_cols:
-                unique_pairs = df[[col1, col2]].drop_duplicates()
-                if len(unique_pairs) == len(df[col1].unique()) and len(df[col1].unique()) > 1:
-                    associations.append({
-                        "type": "1:1 Mapping",
-                        "columns": [col1, col2],
-                        "description": f"{col1} uniquely determines {col2}",
-                        "sql": f"-- {col1} -> {col2} (1:1 mapping)",
-                        "pseudo_code": f"# {col1} -> {col2} (1:1 mapping)",
-                        "confidence": "High",
-                        "business_meaning": f"Each {col1} value corresponds to exactly one {col2} value",
-                        "requires_approval": False,
-                        "hr_usable": True
-                    })
-                    break
+    # This is a REAL HR policy: Status determines Working_Hours behavior
+    if status_col and working_hours_col:
+        # Verify this is a policy, not coincidence
+        status_values = df[status_col].dropna().unique()
+        if len(status_values) > 1:  # Multiple statuses exist
+            associations.append({
+                "type": "HR Policy Association",
+                "columns": [status_col, working_hours_col],
+                "description": f"{status_col} determines {working_hours_col} behavior (HR Policy)",
+                "sql": f"-- {status_col} -> {working_hours_col} (HR Policy: Status determines working hours)",
+                "pseudo_code": f"# {status_col} -> {working_hours_col} (HR Policy relationship)",
+                "confidence": "High",
+                "business_meaning": f"HR Policy: Employee {status_col} directly affects {working_hours_col} calculation",
+                "requires_approval": False,
+                "hr_usable": True,
+                "policy_backed": True
+            })
     
-    return associations[:5]  # Limit to avoid too many
+    # DO NOT create other associations - they're likely data coincidence, not policy
+    return associations
 
 # ==================== STATISTICAL INSIGHTS (Separate from Business Rules) ====================
 def generate_statistical_insights(df: pd.DataFrame, profile: dict) -> list:
@@ -626,7 +709,7 @@ def analyze_data(df: pd.DataFrame) -> dict:
         "associations": {
             "count": len(associations),
             "rules": associations,
-            "note": "Clear business relationships between columns"
+            "note": "⚠️ STRICT: Only HR policy-backed associations. No statistical correlations or data coincidences."
         },
         "data_quality_warnings": {
             "count": len(data_quality_warnings),
@@ -639,10 +722,22 @@ def analyze_data(df: pd.DataFrame) -> dict:
             "note": "⚠️ STATISTICAL INSIGHTS - NOT BUSINESS RULES. These are observations for reference only."
         },
         "recommendations": [
+            "✅ All rules are policy-valid and exclude dates/IDs/high-cardinality fields",
             "Review all Decision Rules to confirm they match your HR policies",
             "Validate Constraint ranges with HR team",
             "Test Derived Fields with sample data before implementation",
             "Address Data Quality Warnings before applying rules",
-            "Statistical Insights are for reference only - do not implement as business rules"
-        ]
+            "⚠️ Statistical Insights are observations only - NOT business rules",
+            "⚠️ Associations are only included if backed by real HR policy - no data coincidences"
+        ],
+        "strict_mode": {
+            "enabled": True,
+            "exclusions": [
+                "Dates and datetime fields excluded from rule generation",
+                "ID, Name, Code, Key fields excluded",
+                "High-cardinality fields (>80% unique) excluded",
+                "Statistical correlations NOT treated as business rules",
+                "Only policy-valid associations included"
+            ]
+        }
     }

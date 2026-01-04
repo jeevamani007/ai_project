@@ -53,6 +53,20 @@ function formatResults(data) {
     html += `</div>`;
   }
   
+  // Strict Mode Information
+  if (data.strict_mode && data.strict_mode.enabled) {
+    html += `<div class="section strict-mode-section">
+      <h3>🔒 Strict Mode Active</h3>
+      <p class="section-note">Only policy-valid business rules are extracted. Statistical correlations and data coincidences are excluded.</p>
+      <div class="exclusions-list">
+        <strong>Exclusions Applied:</strong>
+        <ul>`;
+    data.strict_mode.exclusions.forEach(exclusion => {
+      html += `<li>${exclusion}</li>`;
+    });
+    html += `</ul></div></div>`;
+  }
+  
   // Dataset Profile
   if (data.dataset_profile) {
     html += `<div class="section profile-section">
