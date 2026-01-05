@@ -1,0 +1,7 @@
+employee_id,employee_name,department,designation,joining_date,total_working_days,present_days,absent_days,leave_count,monthly_salary
+E001,Ramesh,IT,Software Engineer,2021-06-15,22,20,2,1,45000
+E002,Suresh,HR,HR Executive,2020-03-10,22,16,6,4,30000
+E003,Priya,Finance,Accountant,2019-11-01,22,21,1,0,55000
+E004,Karthik,Sales,Sales Executive,2022-01-20,22,14,8,6,40000
+E005,Anitha,IT,Senior Developer,2018-08-05,22,22,0,0,75000
+E006,Manoj,Operations,Supervisor,2017-02-14,22,17,5,3,38000

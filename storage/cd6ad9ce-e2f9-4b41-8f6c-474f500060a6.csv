@@ -1,0 +1,11 @@
+employee_id,employee_name,department,designation,present_days,absent_days,total_working_days,leave_count,monthly_salary
+1,John Doe,IT,Software Engineer,22,3,25,2,75000
+2,Jane Smith,HR,HR Manager,24,1,25,1,85000
+3,Bob Johnson,Sales,Sales Executive,20,5,25,3,60000
+4,Alice Williams,IT,Senior Developer,23,2,25,1,90000
+5,Charlie Brown,Finance,Accountant,25,0,25,0,70000
+6,Diana Prince,HR,Recruiter,18,7,25,5,55000
+7,Edward Norton,IT,DevOps Engineer,21,4,25,2,80000
+8,Fiona Apple,Marketing,Marketing Manager,22,3,25,2,75000
+9,George Lucas,Sales,Sales Manager,19,6,25,4,65000
+10,Hannah Montana,Finance,Financial Analyst,24,1,25,1,72000

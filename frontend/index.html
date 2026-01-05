@@ -3,17 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Business Rule Discovery & Data Insight Engine</title>
+  <title>AI Business Rules & Decision Tree Engine</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h2>Business Rule Discovery & Data Insight Engine</h2>
-<p class="subtitle">Upload your dataset (CSV, XLS, XLSX) to automatically detect the domain, profile data, and extract actionable business rules, constraints, derivations, associations, and insights</p>
+<div class="header">
+  <h1>🤖 AI Business Rules & Decision Tree Engine</h1>
+  <p class="subtitle">Upload your HR dataset (CSV, XLS, XLSX) to automatically detect purpose, apply ML pattern recognition, and execute transparent IF-ELSE business rules with step-by-step explanations</p>
+</div>
 
 <div class="upload-section">
-  <input type="file" id="fileInput" accept=".csv,.xls,.xlsx">
-  <button onclick="upload()">Analyze</button>
+  <div class="upload-controls">
+    <div class="file-input-wrapper">
+      <label for="fileInput" class="file-label">
+        <span class="file-icon">📁</span>
+        <span id="fileName">Choose File</span>
+      </label>
+      <input type="file" id="fileInput" accept=".csv,.xls,.xlsx" style="display: none;">
+    </div>
+    
+    <div class="analysis-mode">
+      <label class="mode-label">
+        <input type="radio" name="analysisMode" value="prediction" checked>
+        <span>🎯 Prediction Engine (Full Data + Keywords)</span>
+      </label>
+      <label class="mode-label">
+        <input type="radio" name="analysisMode" value="decision-tree">
+        <span>Decision Tree Engine (ML + Rules)</span>
+      </label>
+      <label class="mode-label">
+        <input type="radio" name="analysisMode" value="standard">
+        <span>Standard Analysis</span>
+      </label>
+    </div>
+    
+    <div class="ml-toggle">
+      <label class="toggle-switch">
+        <input type="checkbox" id="useML" checked>
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Enable ML Pattern Recognition</span>
+      </label>
+    </div>
+    
+    <button id="analyzeBtn" onclick="upload()" class="analyze-button">
+      <span class="btn-icon">🚀</span>
+      <span class="btn-text">Analyze Dataset</span>
+    </button>
+  </div>
+</div>
+
+<div id="loading" class="loading" style="display: none;">
+  <div class="spinner"></div>
+  <p>Analyzing your data with AI Decision Tree Engine...</p>
 </div>
 
 <div id="result"></div>

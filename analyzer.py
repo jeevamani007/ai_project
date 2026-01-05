@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import os
+from keyword_loader import load_hr_keywords, match_keywords_in_columns
 
 # ==================== DOMAIN DETECTION ====================
 def detect_domain(df: pd.DataFrame) -> dict:
-    """Detect domain strictly using column names and values - NO guessing"""
+    """Detect domain using column names, values, and HR keywords from .md file"""
     columns_lower = [col.lower() for col in df.columns]
     col_text = " ".join(columns_lower)
     
@@ -12,9 +14,17 @@ def detect_domain(df: pd.DataFrame) -> dict:
     sample_values = " ".join([str(val).lower() for col in df.columns[:5] for val in df[col].dropna().head(10)])
     combined_text = col_text + " " + sample_values
     
+    # Load HR keywords from .md file
+    md_path = os.path.join(os.path.dirname(__file__), ".md")
+    hr_keywords_dict = load_hr_keywords(md_path)
+    hr_keywords = hr_keywords_dict.get('ALL', [])
+    
+    # Match columns against HR keywords
+    matched_hr_keywords = match_keywords_in_columns(df.columns.tolist(), hr_keywords)
+    
     domain_keywords = {
         "HR": {
-            "keywords": ["employee", "attendance", "hr", "working_hours", "check_in", "check_out", "status", "absent", "present", "half day", "leave", "department"],
+            "keywords": hr_keywords + ["employee", "attendance", "hr", "working_hours", "check_in", "check_out", "status", "absent", "present", "half day", "leave", "department"],
             "description": "Human Resources domain - employee attendance, working hours, leave management"
         },
         "Finance": {
@@ -40,12 +50,17 @@ def detect_domain(df: pd.DataFrame) -> dict:
         score = sum(1 for keyword in info["keywords"] if keyword in combined_text)
         domain_scores[domain] = score
     
+    # Boost HR score if HR keywords matched
+    if len(matched_hr_keywords) > 0:
+        domain_scores["HR"] = domain_scores.get("HR", 0) + len(matched_hr_keywords)
+    
     detected_domain = max(domain_scores, key=domain_scores.get) if max(domain_scores.values()) > 0 else "Generic"
     
     reasoning = []
     if detected_domain != "Generic":
-        matched_keywords = [kw for kw in domain_keywords[detected_domain]["keywords"] if kw in combined_text]
-        reasoning.append(f"Detected {detected_domain} domain based on column names: {', '.join(matched_keywords[:5])}")
+        if detected_domain == "HR" and matched_hr_keywords:
+            reasoning.append(f"Detected HR domain based on {len(matched_hr_keywords)} matched keywords from HR domain list: {', '.join(matched_hr_keywords[:10])}")
+        matched_keywords = [kw for kw in domain_keywords[detected_domain]["keywords"] if kw in combined_text][:10]
         reasoning.append(f"Column names like {', '.join([col for col in df.columns[:3]])} indicate {detected_domain} context")
     else:
         reasoning.append("No specific domain pattern detected in column names")
@@ -55,7 +70,8 @@ def detect_domain(df: pd.DataFrame) -> dict:
         "domain": detected_domain,
         "description": domain_keywords.get(detected_domain, {"description": "Generic domain"}).get("description"),
         "reasoning": reasoning,
-        "confidence": "High" if max(domain_scores.values()) >= 3 else "Medium" if max(domain_scores.values()) >= 1 else "Low"
+        "confidence": "High" if max(domain_scores.values()) >= 3 else "Medium" if max(domain_scores.values()) >= 1 else "Low",
+        "matched_keywords": matched_hr_keywords if detected_domain == "HR" else []
     }
 
 # ==================== DATASET PROFILING ====================
