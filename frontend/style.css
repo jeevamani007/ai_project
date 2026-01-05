@@ -1776,6 +1776,248 @@ pre {
   border-left: 4px solid #dc3545;
 }
 
+/* Keyword Mapping Styles */
+.keyword-mapping-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.mapping-table-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.95);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mapping-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.mapping-table th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.mapping-table td {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.mapping-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.match-type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.match-type-badge.exact {
+  background: #d4edda;
+  color: #155724;
+}
+
+.match-type-badge.partial {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Logic Flow Styles */
+.logic-flow-section {
+  background: #f8f9fa;
+}
+
+.logic-flow-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 20px;
+  border-left: 4px solid #667eea;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.logic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.logic-category {
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+  text-transform: capitalize;
+}
+
+.logic-index {
+  background: #667eea;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.logic-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.logic-step {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.logic-step .step-number {
+  flex-shrink: 0;
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.step-content {
+  flex: 1;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.step-keywords, .step-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.keyword-badge, .column-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.column-badge {
+  background: #28a745;
+}
+
+.rule-display {
+  margin-top: 8px;
+  padding: 12px;
+  background: #e7f3ff;
+  border-left: 3px solid #667eea;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #1565c0;
+}
+
+.result-display {
+  margin-top: 8px;
+  padding: 12px;
+  background: #d4edda;
+  border-left: 3px solid #28a745;
+  border-radius: 6px;
+  color: #155724;
+  font-weight: 500;
+}
+
+.matched-info {
+  margin: 20px 0;
+  padding: 15px;
+  background: #e7f3ff;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.keyword-tag, .column-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  margin: 5px;
+  background: #667eea;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.column-tag {
+  background: #28a745;
+}
+
+.logic-flow-box {
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.logic-flow-box h5 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.flow-step {
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+  font-size: 14px;
+  color: #495057;
+}
+
+.logic-steps-cell {
+  max-width: 300px;
+  font-size: 11px;
+}
+
+.logic-step-item {
+  padding: 5px;
+  margin: 3px 0;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 2px solid #667eea;
+  font-family: 'Courier New', monospace;
+  color: #495057;
+}
+
 @media (max-width: 768px) {
   .rule-code {
     grid-template-columns: 1fr;

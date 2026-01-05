@@ -36,50 +36,111 @@ class HRPredictionEngine:
         }
     
     def match_all_keywords(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """Match all HR keywords in the dataset"""
+        """Match all HR keywords in the dataset with detailed mapping"""
         columns = df.columns.tolist()
+        columns_lower = [col.lower() for col in columns]
         matched = match_keywords_in_columns(columns, self.all_keywords)
         
-        # Categorize matched keywords
+        # Detailed keyword-to-column mapping
+        keyword_to_column = {}
+        for keyword in matched:
+            matching_columns = []
+            for i, col_lower in enumerate(columns_lower):
+                if keyword == col_lower or keyword in col_lower or col_lower in keyword:
+                    matching_columns.append({
+                        "column": columns[i],
+                        "match_type": "exact" if keyword == col_lower else "partial"
+                    })
+            if matching_columns:
+                keyword_to_column[keyword] = matching_columns
+        
+        # Categorize matched keywords with detailed info
         categorized_matches = {}
         for category, keywords in self.keyword_categories.items():
-            category_matches = [kw for kw in matched if kw in keywords]
+            category_matches = []
+            category_columns = []
+            category_logic = []
+            
+            for keyword in keywords:
+                if keyword in matched:
+                    category_matches.append(keyword)
+                    # Find columns for this keyword
+                    for col_info in keyword_to_column.get(keyword, []):
+                        if col_info["column"] not in category_columns:
+                            category_columns.append(col_info["column"])
+                    
+                    # Define logic for this keyword
+                    if category == "salary":
+                        category_logic.append(f"IF {keyword} found → Apply Salary Level Rule (>=80K=High, >=40K=Medium, <40K=Low)")
+                    elif category == "attendance":
+                        category_logic.append(f"IF {keyword} found → Apply Attendance Rule (>=90%=Excellent, >=75%=Good, >=60%=Fair, <60%=Poor)")
+                    elif category == "leave":
+                        category_logic.append(f"IF {keyword} found → Apply Leave Rule (Casual<=2=Approved, Sick=Approved with proof, LOP=Deduction)")
+                    elif category == "performance":
+                        category_logic.append(f"IF {keyword} found → Apply Performance Rule (>=4.5=Excellent 20%, >=3.0=Good 10%, <3.0=Needs Improvement 0%)")
+            
             if category_matches:
                 categorized_matches[category] = {
                     "keywords": category_matches,
-                    "columns": [col for col in columns if any(kw in col.lower() for kw in category_matches)]
+                    "columns": category_columns,
+                    "logic_rules": category_logic,
+                    "triggered": True
                 }
         
         return {
             "all_matched": matched,
+            "keyword_to_column_mapping": keyword_to_column,
             "categorized": categorized_matches,
-            "total_matches": len(matched)
+            "total_matches": len(matched),
+            "total_columns": len(columns),
+            "matched_columns": list(set([col["column"] for cols in keyword_to_column.values() for col in cols]))
         }
     
-    def predict_salary_level(self, df: pd.DataFrame, salary_col: str) -> Dict[str, Any]:
-        """Predict salary levels (High/Medium/Low) for all records"""
+    def predict_salary_level(self, df: pd.DataFrame, salary_col: str, matched_keyword: str = None) -> Dict[str, Any]:
+        """Predict salary levels (High/Medium/Low) for all records with complete logic flow"""
         if salary_col not in df.columns:
             return {"error": "Salary column not found"}
         
         # Convert to numeric
         salaries = pd.to_numeric(df[salary_col], errors='coerce')
         
+        # Define the complete logic flow
+        logic_flow = {
+            "triggered_by": matched_keyword or "salary keyword",
+            "column_used": salary_col,
+            "rule_applied": "IF salary >= 80000 → High | IF salary >= 40000 → Medium | ELSE → Low",
+            "thresholds": {"high": 80000, "medium": 40000}
+        }
+        
         # Apply business rules
         predictions = []
         for idx, row in df.iterrows():
             salary = salaries.iloc[idx]
+            
+            # Step-by-step logic
+            logic_steps = []
+            logic_steps.append(f"Step 1: Read {salary_col} = {salary:,.0f}" if not pd.isna(salary) else f"Step 1: {salary_col} is missing")
+            
             if pd.isna(salary):
                 level = "Unknown"
                 explanation = "Salary value is missing"
-            elif salary >= 80000:
-                level = "High"
-                explanation = f"Salary {salary:,.0f} >= 80,000, so Salary Level is High"
-            elif salary >= 40000:
-                level = "Medium"
-                explanation = f"Salary {salary:,.0f} >= 40,000 but < 80,000, so Salary Level is Medium"
+                logic_steps.append("Step 2: Value is missing → Prediction = Unknown")
             else:
-                level = "Low"
-                explanation = f"Salary {salary:,.0f} < 40,000, so Salary Level is Low"
+                logic_steps.append(f"Step 2: Check IF {salary:,.0f} >= 80,000")
+                if salary >= 80000:
+                    level = "High"
+                    explanation = f"Salary {salary:,.0f} >= 80,000, so Salary Level is High"
+                    logic_steps.append(f"Step 3: Condition TRUE → Prediction = High")
+                else:
+                    logic_steps.append(f"Step 3: Condition FALSE, Check IF {salary:,.0f} >= 40,000")
+                    if salary >= 40000:
+                        level = "Medium"
+                        explanation = f"Salary {salary:,.0f} >= 40,000 but < 80,000, so Salary Level is Medium"
+                        logic_steps.append(f"Step 4: Condition TRUE → Prediction = Medium")
+                    else:
+                        level = "Low"
+                        explanation = f"Salary {salary:,.0f} < 40,000, so Salary Level is Low"
+                        logic_steps.append(f"Step 4: Condition FALSE → Prediction = Low")
             
             # Get employee name if available
             employee_name = self._get_employee_name(row, df.columns.tolist())
@@ -90,6 +151,7 @@ class HRPredictionEngine:
                 "salary": float(salary) if not pd.isna(salary) else None,
                 "prediction": level,
                 "explanation": explanation,
+                "logic_steps": logic_steps,
                 "full_record": row.to_dict()
             })
         
@@ -113,10 +175,11 @@ class HRPredictionEngine:
         return {
             "predictions": predictions,
             "statistics": stats,
-            "business_rule": "IF salary >= 80000 → High | IF salary >= 40000 → Medium | ELSE → Low"
+            "business_rule": "IF salary >= 80000 → High | IF salary >= 40000 → Medium | ELSE → Low",
+            "logic_flow": logic_flow
         }
     
-    def predict_attendance_status(self, df: pd.DataFrame, attendance_cols: Dict[str, str]) -> Dict[str, Any]:
+    def predict_attendance_status(self, df: pd.DataFrame, attendance_cols: Dict[str, str], matched_keywords: List[str] = None) -> Dict[str, Any]:
         """Predict attendance status and calculate percentages"""
         predictions = []
         
@@ -206,10 +269,19 @@ class HRPredictionEngine:
             stats["best_record"] = next((p for p in predictions if p["attendance_percentage"] == best_pct), None)
             stats["worst_record"] = next((p for p in predictions if p["attendance_percentage"] == worst_pct), None)
         
+        # Define logic flow
+        logic_flow = {
+            "triggered_by": matched_keywords or ["attendance keyword"],
+            "columns_used": list(attendance_cols.values()),
+            "rule_applied": "IF attendance >= 90% → Excellent (Normal) | IF >= 75% → Good (Normal) | IF >= 60% → Fair (Warning) | ELSE → Poor (Worst)",
+            "thresholds": {"excellent": 90, "good": 75, "fair": 60}
+        }
+        
         return {
             "predictions": predictions,
             "statistics": stats,
-            "business_rule": "IF attendance >= 90% → Excellent (Normal) | IF >= 75% → Good (Normal) | IF >= 60% → Fair (Warning) | ELSE → Poor (Worst)"
+            "business_rule": "IF attendance >= 90% → Excellent (Normal) | IF >= 75% → Good (Normal) | IF >= 60% → Fair (Warning) | ELSE → Poor (Worst)",
+            "logic_flow": logic_flow
         }
     
     def predict_leave_analysis(self, df: pd.DataFrame, leave_cols: Dict[str, str]) -> Dict[str, Any]:
@@ -380,14 +452,21 @@ class HRPredictionEngine:
         
         # Salary predictions
         if "salary" in keyword_matches["categorized"]:
-            salary_cols = keyword_matches["categorized"]["salary"]["columns"]
+            salary_info = keyword_matches["categorized"]["salary"]
+            salary_cols = salary_info["columns"]
+            salary_keywords = salary_info["keywords"]
             if salary_cols:
                 salary_col = salary_cols[0]  # Use first matched column
-                predictions["salary"] = self.predict_salary_level(df, salary_col)
+                matched_keyword = salary_keywords[0] if salary_keywords else None
+                predictions["salary"] = self.predict_salary_level(df, salary_col, matched_keyword)
+                predictions["salary"]["matched_keywords"] = salary_keywords
+                predictions["salary"]["matched_columns"] = salary_cols
         
         # Attendance predictions
         if "attendance" in keyword_matches["categorized"]:
-            attendance_cols = keyword_matches["categorized"]["attendance"]["columns"]
+            attendance_info = keyword_matches["categorized"]["attendance"]
+            attendance_cols = attendance_info["columns"]
+            attendance_keywords = attendance_info["keywords"]
             attendance_mapping = {}
             for col in attendance_cols:
                 col_lower = col.lower()
@@ -403,7 +482,9 @@ class HRPredictionEngine:
                     attendance_mapping["absent_days"] = col
             
             if attendance_mapping:
-                predictions["attendance"] = self.predict_attendance_status(df, attendance_mapping)
+                predictions["attendance"] = self.predict_attendance_status(df, attendance_mapping, attendance_keywords)
+                predictions["attendance"]["matched_keywords"] = attendance_keywords
+                predictions["attendance"]["matched_columns"] = attendance_cols
         
         # Leave predictions
         if "leave" in keyword_matches["categorized"]:
@@ -426,11 +507,24 @@ class HRPredictionEngine:
                 perf_col = perf_cols[0]
                 predictions["performance"] = self.predict_performance_level(df, perf_col)
         
+        # Build complete logic flow summary
+        logic_summary = []
+        for category, pred_data in predictions.items():
+            if "logic_flow" in pred_data:
+                logic_summary.append({
+                    "category": category,
+                    "triggered_by": pred_data.get("matched_keywords", []),
+                    "columns_used": pred_data.get("matched_columns", []),
+                    "rule_applied": pred_data.get("business_rule", ""),
+                    "logic_flow": pred_data.get("logic_flow", {})
+                })
+        
         return {
             "domain": domain_info.get("domain", "Unknown"),
             "domain_confidence": domain_info.get("confidence", "Low"),
             "keyword_matches": keyword_matches,
             "predictions": predictions,
+            "logic_summary": logic_summary,
             "total_records": len(df),
             "total_columns": len(df.columns)
         }

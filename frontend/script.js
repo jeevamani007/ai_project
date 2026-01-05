@@ -516,10 +516,10 @@ function formatPredictionResults(data) {
       <span class="purpose-badge">Records: ${data.total_records || 0}</span>
     </div>`;
   
-  // Keyword Matches
+  // Keyword Matches with Detailed Logic Flow
   if (data.keyword_matches) {
     html += `<div class="keywords-summary">
-      <strong>Matched Keywords:</strong> ${data.keyword_matches.total_matches || 0} keywords found
+      <strong>Matched Keywords:</strong> ${data.keyword_matches.total_matches || 0} keywords found in ${data.keyword_matches.total_columns || 0} columns
       <div class="keyword-categories">`;
     
     if (data.keyword_matches.categorized) {
@@ -531,7 +531,85 @@ function formatPredictionResults(data) {
       });
     }
     
-    html += `</div></div>`;
+    html += `</div>`;
+    
+    // Show keyword to column mapping
+    if (data.keyword_matches.keyword_to_column_mapping) {
+      html += `<div class="keyword-mapping-section">
+        <h4>🔗 Keyword → Column Mapping</h4>
+        <div class="mapping-table-container">
+          <table class="mapping-table">
+            <thead>
+              <tr>
+                <th>Matched Keyword</th>
+                <th>Column(s) Found</th>
+                <th>Match Type</th>
+              </tr>
+            </thead>
+            <tbody>`;
+      
+      Object.entries(data.keyword_matches.keyword_to_column_mapping).forEach(([keyword, columns]) => {
+        columns.forEach((colInfo, idx) => {
+          html += `<tr>
+            <td><strong>${keyword}</strong></td>
+            <td>${colInfo.column}</td>
+            <td><span class="match-type-badge ${colInfo.match_type}">${colInfo.match_type}</span></td>
+          </tr>`;
+        });
+      });
+      
+      html += `</tbody></table></div></div>`;
+    }
+    
+    html += `</div>`;
+  }
+  
+  // Logic Summary - Show complete flow
+  if (data.logic_summary && data.logic_summary.length > 0) {
+    html += `<div class="section logic-flow-section">
+      <h3>🔀 Complete Logic Flow</h3>
+      <p class="section-note">Shows how keywords trigger rules and generate predictions</p>`;
+    
+    data.logic_summary.forEach((logic, idx) => {
+      html += `<div class="logic-flow-card">
+        <div class="logic-header">
+          <span class="logic-category">${logic.category.toUpperCase()}</span>
+          <span class="logic-index">Flow ${idx + 1}</span>
+        </div>
+        <div class="logic-steps">
+          <div class="logic-step">
+            <span class="step-number">1</span>
+            <div class="step-content">
+              <strong>Keywords Matched:</strong>
+              <div class="step-keywords">${logic.triggered_by.map(k => `<span class="keyword-badge">${k}</span>`).join(" ")}</div>
+            </div>
+          </div>
+          <div class="logic-step">
+            <span class="step-number">2</span>
+            <div class="step-content">
+              <strong>Columns Used:</strong>
+              <div class="step-columns">${logic.columns_used.map(c => `<span class="column-badge">${c}</span>`).join(" ")}</div>
+            </div>
+          </div>
+          <div class="logic-step">
+            <span class="step-number">3</span>
+            <div class="step-content">
+              <strong>Business Rule Applied:</strong>
+              <div class="rule-display">${logic.rule_applied}</div>
+            </div>
+          </div>
+          <div class="logic-step">
+            <span class="step-number">4</span>
+            <div class="step-content">
+              <strong>Result:</strong>
+              <div class="result-display">Predictions generated for all records based on data values</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+    
+    html += `</div>`;
   }
   
   html += `</div>`;
@@ -584,9 +662,28 @@ function formatPredictionResults(data) {
         }
       }
       
+      // Show matched keywords and logic flow
+      if (salary.matched_keywords) {
+        html += `<div class="matched-info">
+          <strong>Triggered by Keywords:</strong> ${salary.matched_keywords.map(k => `<span class="keyword-tag">${k}</span>`).join(" ")}
+          <br><strong>Using Columns:</strong> ${salary.matched_columns.map(c => `<span class="column-tag">${c}</span>`).join(" ")}
+        </div>`;
+      }
+      
+      if (salary.logic_flow) {
+        html += `<div class="logic-flow-box">
+          <h5>Logic Flow:</h5>
+          <div class="flow-steps">
+            <div class="flow-step">Keyword: <strong>${salary.logic_flow.triggered_by}</strong> → Column: <strong>${salary.logic_flow.column_used}</strong></div>
+            <div class="flow-step">Rule: <strong>${salary.logic_flow.rule_applied}</strong></div>
+            <div class="flow-step">Thresholds: High ≥ ${salary.logic_flow.thresholds.high.toLocaleString()}, Medium ≥ ${salary.logic_flow.thresholds.medium.toLocaleString()}</div>
+          </div>
+        </div>`;
+      }
+      
       // Predictions Table
       html += `<div class="predictions-table-container">
-        <h4>All Salary Predictions</h4>
+        <h4>All Salary Predictions (with Logic Steps)</h4>
         <table class="predictions-table">
           <thead>
             <tr>
@@ -594,6 +691,7 @@ function formatPredictionResults(data) {
               <th>Employee Name</th>
               <th>Salary</th>
               <th>Prediction</th>
+              <th>Logic Steps</th>
               <th>Explanation</th>
             </tr>
           </thead>
@@ -605,6 +703,15 @@ function formatPredictionResults(data) {
           <td><strong>${pred.employee_name || "Unknown"}</strong></td>
           <td>${pred.salary ? pred.salary.toLocaleString() : "N/A"}</td>
           <td><span class="prediction-badge ${pred.prediction.toLowerCase()}">${pred.prediction}</span></td>
+          <td class="logic-steps-cell">`;
+        
+        if (pred.logic_steps) {
+          pred.logic_steps.forEach(step => {
+            html += `<div class="logic-step-item">${step}</div>`;
+          });
+        }
+        
+        html += `</td>
           <td class="explanation-cell">${pred.explanation}</td>
         </tr>`;
       });
